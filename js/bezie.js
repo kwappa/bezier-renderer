@@ -1,10 +1,10 @@
 var bezier = (function(canvas_name) {
-    var count = 0.0 ;
 
     var global = {
         count: 0.0,
         ctrl_points: [],
         scale_points: [],
+        bezier_points: [],
         mode: 0,
         count: 0,
         timer_id: null,
@@ -13,6 +13,7 @@ var bezier = (function(canvas_name) {
         run: function() {
             this.mode = 1 ;     // 実行中
             this.count = 0 ;
+            this.bezier_points = [] ;
             var that = this ;
             this.timer_id = setInterval(function() { that.loop.apply(that) }, 10) ;
         },
@@ -116,11 +117,21 @@ var bezier = (function(canvas_name) {
                 }
                 if (this.scale_points[i].length == 2) { // 最後の直線
                     var line = new BezierLine(this.scale_points[i][0], this.scale_points[i][1]) ;
-                    var bezie_point = line.getMidPoint(this.getCurrentScale()) ;
+                    var bezier_point = line.getMidPoint(this.getCurrentScale()) ;
                     this.context.fillStyle = "ff0000" ;
                     this.context.beginPath() ;
-                    this.context.arc(bezie_point.x, bezie_point.y, 4, Math.PI * 2, false) ;
+                    this.context.arc(bezier_point.x, bezier_point.y, 4, Math.PI * 2, false) ;
                     this.context.fill() ;
+                    if (this.mode == 1) {
+                        this.bezier_points[this.count] = bezier_point ;
+                        this.context.strokeStyle = "ff0000" ;
+                        for (var j = 1 ; j <= this.count ; j ++) {
+                            this.context.beginPath() ;
+                            this.context.moveTo(this.bezier_points[j - 1].x, this.bezier_points[j - 1].y) ;
+                            this.context.lineTo(this.bezier_points[j].x, this.bezier_points[j].y) ;
+                            this.context.stroke() ;
+                        }
+                    }
                 }
             }
 
