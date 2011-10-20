@@ -29,7 +29,7 @@ var bezier = (function() {
         ctrl_points: [],
         scale_points: [],
         bezier_points: [],
-        mode: 0,                // 0 : コントロールポイントをつ / 1 : 実行中
+        mode: 0,                // 0 : コントロールポイントを置く / 1 : 実行中
         count: 0,
         timer_id: null,
         canvas: null,
