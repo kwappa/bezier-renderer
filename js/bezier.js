@@ -34,6 +34,12 @@ var bezier = (function() {
         timer_id: null,
         canvas: null,
         context: null,
+        bezier_color: {
+            ctrl_line: '#ffffff',
+            ctrl_point: '#ffeeff',
+            bezier_line: '#00ff88',
+            bezier_point: '#ff00ff'
+        },
         // 描画開始
         run: function() {
             if (this.ctrl_points.length < 3) {
@@ -118,7 +124,7 @@ var bezier = (function() {
         // コントロールポイントを描画
         drawContrlolPoints: function() {
             var pts = this.ctrl_points.length ;
-            this.fillStyle = "#000000" ;
+            this.context.fillStyle = this.bezier_color['ctrl_point'] ;
             for (var i = 0 ; i < pts ; i ++) {
                 this.context.beginPath() ;
                 this.context.arc(this.ctrl_points[i].x, this.ctrl_points[i].y, 4, 0, Math.PI * 2, false) ;
@@ -134,7 +140,7 @@ var bezier = (function() {
             // コントロールポイントの描画
             this.drawContrlolPoints() ;
             if (this.drawPoints(this.ctrl_points)) {
-                this.context.strokeStyle = "ff00ff" ;
+                this.context.strokeStyle = this.bezier_color['ctrl_line'] ;
                 this.context.lineWidth = 1 ;
                 this.context.stroke() ;
             }
@@ -146,14 +152,14 @@ var bezier = (function() {
             var scale_points = this.scale_points.length ;
             for (var i = 0 ; i < scale_points ; i ++) {
                 if (this.drawPoints(this.scale_points[i])) {
-                    this.context.strokeStyle = "00ff00" ;
+                    this.context.strokeStyle = this.bezier_color['bezier_line'] ;
                     this.context.lineWidth = 1 ;
                     this.context.stroke() ;
                 }
                 if (this.scale_points[i].length == 2) { // 最後の直線 = 結果の生成元
                     var line = new BezierLine(this.scale_points[i][0], this.scale_points[i][1]) ;
                     var bezier_point = line.getMidPoint(this.getCurrentScale()) ;
-                    this.context.fillStyle = "ff0000" ;
+                    this.context.fillStyle = this.bezier_color['bezier_point'] ;
                     this.context.beginPath() ;
                     this.context.arc(bezier_point.x, bezier_point.y, 4, Math.PI * 2, false) ;
                     this.context.fill() ;
