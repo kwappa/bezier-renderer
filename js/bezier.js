@@ -25,6 +25,13 @@ var bezier = (function() {
         }
     }
 
+    // 動作状況
+    const Mode = {
+        PUT_PATH_POINTS:    0,
+        PUT_CONTROL_POINTS: 1,
+        RUNNING:            2
+    }
+
     var global = {
         ctrl_points: [],
         scale_points: [],
@@ -45,7 +52,7 @@ var bezier = (function() {
             if (this.ctrl_points.length < 3) {
                 return ;
             }
-            this.mode = 1 ;     // 実行中
+            this.mode = Mode.RUNNING ;     // 実行中
             this.count = 0 ;
             this.bezier_points = [] ;
             var that = this ;
@@ -57,7 +64,7 @@ var bezier = (function() {
             this.count ++ ;
             if (this.count > 100) {
                 this.count = 100 ;
-                this.mode = 0 ;
+                this.mode = Mode.PUT_CONTROL_POINTS ;
                 clearInterval(this.timer_id) ;
             }
         },
@@ -68,12 +75,31 @@ var bezier = (function() {
             $('#bezier-scale-value').attr('value', 0) ;
             this.syncCount();
             this.draw() ;
+            this.mode = Mode.PUT_PATH_POINTS ;
         },
         // キャンバスクリック時のイベントハンドラ
         onCanvasClick: function(event) {
-            if(this.mode == 0) {
-                this.ctrl_points.push(this.getMousePosition(event)) ;
-                this.draw() ;
+            switch (this.mode)
+            {
+                case Mode.PUT_PATH_POINTS :
+                {
+                    this.path_points.push(this.getMousePosition(event)) ;
+                    this.draw() ;
+                    if (this.path_points.length >= 2) {
+                        this.mode = Mode.PUT_CONTROL_POINTS ;
+                    }
+                    break ;
+                }
+                case Mode.PUT_CONTROL_POINTS :
+                {
+                    this.ctrl_points.push(this.getMousePosition(event)) ;
+                    this.draw() ;
+                    break ;
+                }
+                default :
+                {
+                    break ;
+                }
             }
         },
         // キャンバスのクリック座標を取得
@@ -163,7 +189,7 @@ var bezier = (function() {
                     this.context.beginPath() ;
                     this.context.arc(bezier_point.x, bezier_point.y, 4, Math.PI * 2, false) ;
                     this.context.fill() ;
-                    if (this.mode == 1) { // 実行中なら軌跡を保存 / 描画
+                    if (this.mode == Mode.RUNNING) { // 実行中なら軌跡を保存 / 描画
                         this.bezier_points[this.count] = bezier_point ;
                         this.context.strokeStyle = "ff0000" ;
                         for (var j = 1 ; j <= this.count ; j ++) {
