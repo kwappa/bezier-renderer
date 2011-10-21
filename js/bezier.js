@@ -33,19 +33,22 @@ var bezier = (function() {
     }
 
     var global = {
-        ctrl_points: [],
-        scale_points: [],
-        bezier_points: [],
-        mode: 0,                // 0 : コントロールポイントを置く / 1 : 実行中
+        path_points:   [],      // 始点と終点
+        ctrl_points:   [],      // コントロールポイント
+        scale_points:  [],      // 移動に応じて算出されるポイント
+        bezier_points: [],      // 結果として得られる曲線のポイント
+        mode: Mode.PUT_PATH_POINTS,
         count: 0,
         timer_id: null,
-        canvas: null,
-        context: null,
+        canvas:   null,
+        context:  null,
         bezier_color: {
-            ctrl_line: '#ffffff',
-            ctrl_point: '#ffeeff',
-            bezier_line: '#00ff88',
-            bezier_point: '#ff00ff'
+            grid:         '#88ffff',
+            ctrl_line:    '#ffffff',
+            ctrl_point:   '#ffeeff',
+            bezier_line:  '#00ff88',
+            bezier_point: '#ff00ff',
+            bezier_curve: '#ff0000'
         },
         // 描画開始
         run: function() {
@@ -70,6 +73,7 @@ var bezier = (function() {
         },
         // コントロールポイントをクリア
         resetPoints: function() {
+            this.path_points  = [] ;
             this.ctrl_points  = [] ;
             this.scale_points = [] ;
             $('#bezier-scale-value').attr('value', 0) ;
@@ -127,7 +131,6 @@ var bezier = (function() {
             if (point_count > 2) {
                 var mid_points = [] ;
                 for (var i = 0 ; i < point_count - 1 ; i ++) {
-
                     var line = new BezierLine(points[i], points[i + 1]) ;
                     mid_points.push(line.getMidPoint(scale)) ;
                 }
@@ -136,25 +139,32 @@ var bezier = (function() {
             }
         },
         // ポイントの配列を描画
-        drawPoints: function(points) {
+        drawLineOfPoints: function(points, color, width) {
             var p_num = points.length - 1 ;
             if (p_num < 1) {
-                return false ;
+                return ;
             }
             this.context.beginPath() ;
             this.context.moveTo(points[0].x, points[0].y) ;
             for (var i = 1 ; i <= p_num ; i ++) {
                 this.context.lineTo(points[i].x, points[i].y) ;
             }
-            return true ;
+            this.context.strokeStyle = color ;
+            this.context.lineWidth = width ;
+            this.context.stroke() ;
         },
         // コントロールポイントを描画
-        drawContrlolPoints: function() {
-            var pts = this.ctrl_points.length ;
-            this.context.fillStyle = this.bezier_color['ctrl_point'] ;
+        drawArcOfControlPoints: function() {
+            this.drawArcOfPoints(this.ctrl_points, this.bezier_color['ctrl_point'], 4) ;
+            this.drawArcOfPoints(this.path_points, this.bezier_color['ctrl_point'], 4) ;
+        },
+        // ポイントの配列に円を描画
+        drawArcOfPoints: function(points, color, radius) {
+            var pts = points.length ;
+            this.context.fillStyle = color ;
             for (var i = 0 ; i < pts ; i ++) {
                 this.context.beginPath() ;
-                this.context.arc(this.ctrl_points[i].x, this.ctrl_points[i].y, 4, 0, Math.PI * 2, false) ;
+                this.context.arc(points[i].x, points[i].y, radius, 0, Math.PI * 2, false) ;
                 this.context.fill() ;
             }
         },
@@ -183,12 +193,9 @@ var bezier = (function() {
             this.drawGrid() ;   // グリッドを引く
 
             // コントロールポイントの描画
-            this.drawContrlolPoints() ;
-            if (this.drawPoints(this.ctrl_points)) {
-                this.context.strokeStyle = this.bezier_color['ctrl_line'] ;
-                this.context.lineWidth = 1 ;
-                this.context.stroke() ;
-            }
+            this.drawLineOfPoints(this.path_points, this.bezier_color['ctrl_line'], 1) ;
+            this.drawLineOfPoints(this.ctrl_points, this.bezier_color['ctrl_line'], 1) ;
+            this.drawArcOfControlPoints() ;
 
             // 時間経過による中点の生成と描画
             this.scale_points = [] ;
@@ -196,11 +203,7 @@ var bezier = (function() {
 
             var scale_points = this.scale_points.length ;
             for (var i = 0 ; i < scale_points ; i ++) {
-                if (this.drawPoints(this.scale_points[i])) {
-                    this.context.strokeStyle = this.bezier_color['bezier_line'] ;
-                    this.context.lineWidth = 1 ;
-                    this.context.stroke() ;
-                }
+                this.drawLineOfPoints(this.scale_points[i], this.bezier_color['bezier_line'], 1) ;
                 if (this.scale_points[i].length == 2) { // 最後の直線 = 結果の生成元
                     var line = new BezierLine(this.scale_points[i][0], this.scale_points[i][1]) ;
                     var bezier_point = line.getMidPoint(this.getCurrentScale()) ;
@@ -210,7 +213,7 @@ var bezier = (function() {
                     this.context.fill() ;
                     if (this.mode == Mode.RUNNING) { // 実行中なら軌跡を保存 / 描画
                         this.bezier_points[this.count] = bezier_point ;
-                        this.context.strokeStyle = "ff0000" ;
+                        this.context.strokeStyle = this.bezier_color['bezier_curve'] ;
                         for (var j = 1 ; j <= this.count ; j ++) {
                             this.context.beginPath() ;
                             this.context.moveTo(this.bezier_points[j - 1].x, this.bezier_points[j - 1].y) ;
