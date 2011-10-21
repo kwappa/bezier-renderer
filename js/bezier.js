@@ -119,6 +119,7 @@ var bezier = (function() {
                            }
                           ) ;
             this.context = this.canvas.getContext('2d') ;
+            this.drawGrid() ;
         },
         // スケールによって現在の状態を生成
         buildPoints: function(points, scale) {
@@ -157,11 +158,29 @@ var bezier = (function() {
                 this.context.fill() ;
             }
         },
+        // グリッドを引く
+        drawGrid: function() {
+            this.context.strokeStyle = this.bezier_color['grid'] ;
+            this.context.lineWidth = 0.5 ;
+            for (var gx = 0 ; gx <= this.canvas.width ; gx += 100) {
+                this.context.beginPath() ;
+                this.context.moveTo(gx, 0) ;
+                this.context.lineTo(gx, this.canvas.height) ;
+                this.context.stroke() ;
+            }
+            for (var gy = 0 ; gy <= this.canvas.height ; gy += 100) {
+                this.context.beginPath() ;
+                this.context.moveTo(0, gy) ;
+                this.context.lineTo(this.canvas.width, gy) ;
+                this.context.stroke() ;
+            }
+        },
         // 描画メインルーチン
         draw: function() {
             // キャンバスの初期化
             this.context.save() ;
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height) ;
+            this.drawGrid() ;   // グリッドを引く
 
             // コントロールポイントの描画
             this.drawContrlolPoints() ;
