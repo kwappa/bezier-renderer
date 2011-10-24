@@ -44,6 +44,7 @@ var bezier = (function() {
         context:  null,
         bezier_color: {
             grid:         '#88ffff',
+            path_line:    '#0000ff',
             ctrl_line:    '#ffffff',
             ctrl_point:   '#ffeeff',
             bezier_line:  '#00ff88',
@@ -52,7 +53,7 @@ var bezier = (function() {
         },
         // 描画開始
         run: function() {
-            if (this.ctrl_points.length < 3) {
+            if (this.mode != Mode.PUT_CONTROL_POINTS) {
                 return ;
             }
             this.mode = Mode.RUNNING ;     // 実行中
@@ -193,13 +194,13 @@ var bezier = (function() {
             this.drawGrid() ;   // グリッドを引く
 
             // コントロールポイントの描画
-            this.drawLineOfPoints(this.path_points, this.bezier_color['ctrl_line'], 1) ;
-            this.drawLineOfPoints(this.ctrl_points, this.bezier_color['ctrl_line'], 1) ;
+            this.drawLineOfPoints(this.path_points, this.bezier_color['path_line'], 2) ;
+            this.drawLineOfPoints(this.getAllPoints(), this.bezier_color['ctrl_line'], 1) ;
             this.drawArcOfControlPoints() ;
 
             // 時間経過による中点の生成と描画
             this.scale_points = [] ;
-            this.buildPoints(this.ctrl_points, this.getCurrentScale()) ;
+            this.buildPoints(this.getAllPoints(), this.getCurrentScale()) ;
 
             var scale_points = this.scale_points.length ;
             for (var i = 0 ; i < scale_points ; i ++) {
@@ -225,6 +226,13 @@ var bezier = (function() {
             }
 
             this.context.restore() ;
+        },
+        // パスの始点終点とコントロールポイントを結合して返す
+        getAllPoints: function() {
+            if (this.ctrl_points.length > 0) {
+                return [this.path_points[0]].concat(this.ctrl_points, this.path_points[1]) ;
+            }
+            return this.path_points ;
         },
         // 現在のカウントを正規化して取得
         getCurrentScale: function() {
