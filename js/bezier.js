@@ -74,6 +74,11 @@ var bezier = (function() {
         },
         // コントロールポイントをクリア
         resetPoints: function() {
+            if(this.mode == Mode.RUNNING) {
+                this.count = 100 ;
+                this.mode = Mode.PUT_CONTROL_POINTS ;
+                clearInterval(this.timer_id) ;
+            }
             this.path_points  = [] ;
             this.ctrl_points  = [] ;
             this.scale_points = [] ;
