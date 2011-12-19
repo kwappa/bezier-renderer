@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>ベジェ曲線レンダラ</title>
-    <script type="text/javascript" src="js/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="js/bezier.js"></script>
   </head>
   <body onload="bezier.init('bezier-main-canvas')">
@@ -13,7 +13,7 @@
     </div>
     <div>
     <input type="range"  id="bezier-scale-slider" value="0" onchange="bezier.syncCount(this)" /><br>
-    <input type="number" id="bezier-scale-number" value="0" onchange="bezier.syncCount(this)" />
+    <input type="number" id="bezier-scale-number" value="0" onchange="bezier.syncCount(this)" readonly="true" style="text-align:right;" />
     <input type="hidden" id="bezier-scale-value"  value="0" />
     <br />
     <input type="button" id="bezier-draw-run" value="run"   onclick="bezier.run()" />

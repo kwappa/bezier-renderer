@@ -31,6 +31,11 @@ var bezier = (function() {
         PUT_CONTROL_POINTS: 1,
         RUNNING:            2
     }
+    // マジックナンバー
+    const Param = {
+        PATH_RESOLUTION: 200,   // 分解能
+        FRAME_INTERVAL:   10    // 1fの長さ(msec)
+    }
 
     var global = {
         path_points:   [],      // 始点と終点
@@ -60,14 +65,17 @@ var bezier = (function() {
             this.count = 0 ;
             this.bezier_points = [] ;
             var that = this ;
-            this.timer_id = setInterval(function() { that.loop.apply(that) }, 10) ;
+            this.timer_id = setInterval(
+                function() { that.loop.apply(that) },
+                Param.FRAME_INTERVAL
+            ) ;
         },
         // 描画ループ
         loop: function() {
             this.setCount(this.count) ;
             this.count ++ ;
-            if (this.count > 100) {
-                this.count = 100 ;
+            if (this.count > Param.PATH_RESOLUTION) {
+                this.count = Param.PATH_RESOLUTION ;
                 this.mode = Mode.PUT_CONTROL_POINTS ;
                 clearInterval(this.timer_id) ;
             }
@@ -75,7 +83,7 @@ var bezier = (function() {
         // コントロールポイントをクリア
         resetPoints: function() {
             if(this.mode == Mode.RUNNING) {
-                this.count = 100 ;
+                this.count = Param.PATH_RESOLUTION ;
                 this.mode = Mode.PUT_CONTROL_POINTS ;
                 clearInterval(this.timer_id) ;
             }
@@ -130,6 +138,8 @@ var bezier = (function() {
                           ) ;
             this.context = this.canvas.getContext('2d') ;
             this.drawGrid() ;
+            $('#bezier-scale-value').attr('max', Param.PATH_RESOLUTION) ;
+
         },
         // スケールによって現在の状態を生成
         buildPoints: function(points, scale) {
@@ -241,7 +251,7 @@ var bezier = (function() {
         },
         // 現在のカウントを正規化して取得
         getCurrentScale: function() {
-            return $('#bezier-scale-value').attr('value') / 100.0 ;
+            return $('#bezier-scale-value').attr('value') / parseFloat(Param.PATH_RESOLUTION) ;
         },
         // 現在のカウント値を設定
         setCount: function(value) {
