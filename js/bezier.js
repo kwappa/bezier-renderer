@@ -138,8 +138,7 @@ var bezier = (function() {
                           ) ;
             this.context = this.canvas.getContext('2d') ;
             this.drawGrid() ;
-            $('#bezier-scale-value').attr('max', Param.PATH_RESOLUTION) ;
-
+            $('#bezier-scale-slider').attr('max', Param.PATH_RESOLUTION) ;
         },
         // スケールによって現在の状態を生成
         buildPoints: function(points, scale) {
@@ -263,6 +262,7 @@ var bezier = (function() {
         syncCount: function(elem) {
             var value = $(elem).attr('value') ;
             $('#bezier-scale-value').attr('value', value) ;
+
             $('#bezier-scale-slider').attr('value', value) ;
             $('#bezier-scale-number').attr('value', value) ;
             this.draw() ;
